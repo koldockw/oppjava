@@ -1,6 +1,12 @@
 import java.util.ArrayList;
+import java.util.Objects;
+import java.util.Comparator;
 
-class Post {
+abstract class Entity {
+    public abstract String getInfo();
+}
+
+class Post extends Entity {
     private String title;
 
     public Post(String title) {
@@ -16,12 +22,30 @@ class Post {
     }
 
     @Override
+    public String getInfo() {
+        return "Post title: " + title;
+    }
+
+    @Override
     public String toString() {
-        return "Post: " + title;
+        return getInfo();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Post)) return false;
+        Post post = (Post) o;
+        return Objects.equals(title, post.title);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(title);
     }
 }
 
-class Profile {
+class Profile extends Entity {
     private String username;
 
     public Profile(String username) {
@@ -37,8 +61,26 @@ class Profile {
     }
 
     @Override
+    public String getInfo() {
+        return "Profile username: " + username;
+    }
+
+    @Override
     public String toString() {
-        return "Profile: " + username;
+        return getInfo();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Profile)) return false;
+        Profile profile = (Profile) o;
+        return Objects.equals(username, profile.username);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(username);
     }
 }
 
@@ -51,14 +93,6 @@ class SocialNetwork {
         this.profiles = new ArrayList<>();
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
     public void addProfile(Profile profile) {
         profiles.add(profile);
     }
@@ -67,28 +101,63 @@ class SocialNetwork {
         return profiles;
     }
 
+    public Profile findProfileByUsername(String username) {
+        for (Profile p : profiles) {
+            if (p.getUsername().equalsIgnoreCase(username)) {
+                return p;
+            }
+        }
+        return null;
+    }
+
+    public ArrayList<Profile> filterProfilesByPrefix(String prefix) {
+        ArrayList<Profile> result = new ArrayList<>();
+        for (Profile p : profiles) {
+            if (p.getUsername().startsWith(prefix)) {
+                result.add(p);
+            }
+        }
+        return result;
+    }
+
+    public void sortProfilesByUsername() {
+        profiles.sort(Comparator.comparing(Profile::getUsername));
+    }
+
     @Override
     public String toString() {
-        return "SocialNetwork: " + name + " | Profiles count: " + profiles.size();
+        return "SocialNetwork: " + name + ", profiles count: " + profiles.size();
     }
 }
 
 public class Main {
     public static void main(String[] args) {
+
+        SocialNetwork sn = new SocialNetwork("Instagram");
+
         Profile p1 = new Profile("bakdaulet");
         Profile p2 = new Profile("koldock");
+        Profile p3 = new Profile("alex");
+
+        sn.addProfile(p1);
+        sn.addProfile(p2);
+        sn.addProfile(p3);
 
         Post post1 = new Post("First Post");
         Post post2 = new Post("Second Post");
 
-        SocialNetwork sn = new SocialNetwork("instagram");
-        sn.addProfile(p1);
-        sn.addProfile(p2);
-
-        System.out.println(p1);
-        System.out.println(p2);
         System.out.println(post1);
         System.out.println(post2);
-        System.out.println(sn);
+
+        for (Profile p : sn.getProfiles()) {
+            System.out.println(p);
+        }
+
+        System.out.println(sn.findProfileByUsername("alex"));
+
+        sn.sortProfilesByUsername();
+        for (Profile p : sn.getProfiles()) {
+            System.out.println(p);
+        }
     }
 }
